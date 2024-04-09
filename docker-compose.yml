@@ -1,0 +1,48 @@
+version: '3.8' # Specify a suitable Docker Compose version
+
+services:
+  app:
+    container_name: book_library_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/app/src
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+      - redis
+
+  db:
+    container_name: book_library_postgres
+    image: postgres:latest # Use the latest PostgreSQL image
+    restart: always
+    ports:
+      - "5432:5432" # 172.22.0.3
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: rootpass # Set a strong password
+      POSTGRES_DB: postgres  # Specify the name of your database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist database data
+
+  pgadmin:
+    container_name: book_library_pgadmin
+    image: dpage/pgadmin4:latest # Use the latest pgAdmin4 image  
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"  # Map pgAdmin to port 5050 on your host
+    depends_on:
+      - db  # pgAdmin depends on the PostgreSQL service
+
+  redis:
+    container_name: book_library_redis
+    image: redis:latest
+    restart: always
+
+volumes:
+  postgres_data: 
